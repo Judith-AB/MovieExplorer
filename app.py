@@ -1,61 +1,58 @@
 import os
-import requests
 from flask import Flask, render_template, request
-from dotenv import load_dotenv
+import requests
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
+from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment variables from .env
 load_dotenv()
-TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 
 app = Flask(__name__)
 
-# Setup requests session with retries
+API_KEY = os.getenv("TMDB_API_KEY")
+BASE_URL = "https://api.themoviedb.org/3"
+
+
 session = requests.Session()
-retries = Retry(
-    total=3,               # Retry 3 times
-    backoff_factor=0.5,    # Wait 0.5s, then 1s, then 2s between retries
-    status_forcelist=[500, 502, 503, 504]  # Retry only on server errors
+retry_strategy = Retry(
+    total=3,               
+    backoff_factor=1,       
+    status_forcelist=[429, 500, 502, 503, 504],  
+    allowed_methods=["GET"]
 )
-session.mount("https://", HTTPAdapter(max_retries=retries))
+adapter = HTTPAdapter(max_retries=retry_strategy)
+session.mount("https://", adapter)
+session.mount("http://", adapter)
 
 
 def fetch_movies(query=None, page=1, genre_id=None):
-    """Fetch movies from TMDb API with search, genre, or popular fallback."""
+    """Fetch movies by search, genre, or trending"""
     try:
-        url = "https://api.themoviedb.org/3/search/movie" if query else \
-              "https://api.themoviedb.org/3/discover/movie"
-
-        params = {
-            "api_key": TMDB_API_KEY,
-            "page": page,
-            "with_genres": genre_id if genre_id else None
-        }
         if query:
-            params["query"] = query
+            url = f"{BASE_URL}/search/movie?api_key={API_KEY}&query={query}&page={page}"
+        elif genre_id:
+            url = f"{BASE_URL}/discover/movie?api_key={API_KEY}&with_genres={genre_id}&page={page}"
+        else:
+            url = f"{BASE_URL}/trending/movie/week?api_key={API_KEY}&page={page}"
 
-        response = session.get(url, params=params, timeout=5)
+        response = session.get(url, timeout=10)
         response.raise_for_status()
         return response.json()
-    except requests.exceptions.Timeout:
-        return {"error": "⏳ Server took too long to respond. Please try again."}
-    except requests.exceptions.ConnectionError:
-        return {"error": "⚠️ Network issue. Please check your connection."}
-    except Exception:
-        return {"error": "❌ Unexpected error fetching movies."}
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Error fetching data: {e}")
+        return None
 
 
 def fetch_genres():
-    """Fetch available movie genres from TMDb API."""
+    """Fetch all available genres from TMDB"""
     try:
-        url = "https://api.themoviedb.org/3/genre/movie/list"
-        params = {"api_key": TMDB_API_KEY}
-        response = session.get(url, params=params, timeout=5)
+        url = f"{BASE_URL}/genre/movie/list?api_key={API_KEY}"
+        response = session.get(url, timeout=10)
         response.raise_for_status()
-        data = response.json()
-        return data.get("genres", [])
-    except Exception:
+        return response.json().get("genres", [])
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Error fetching genres: {e}")
         return []
 
 
@@ -65,30 +62,25 @@ def index():
     page = int(request.args.get("page", 1))
     genre_id = request.args.get("genre")
 
-    # Fetch genres for dropdown
+    data = fetch_movies(query, page, genre_id)
     genres = fetch_genres()
 
-    # Fetch movies
-    data = fetch_movies(query, page, genre_id)
-    error = None
     movies = []
     total_pages = 1
 
-    if "error" in data:
-        error = data["error"]
-    else:
+    if data:
         movies = data.get("results", [])
         total_pages = data.get("total_pages", 1)
 
     return render_template(
         "index.html",
         movies=movies,
-        error=error,
+        query=query or "",
         page=page,
         total_pages=total_pages,
-        query=query or "",
         genres=genres,
-        selected_genre=genre_id
+        selected_genre=genre_id,
+        error_message=None if data else "⚠️ Unable to fetch data. Please try again later."
     )
 
 

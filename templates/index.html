@@ -7,111 +7,148 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            background: #f5f5f5;
-            margin: 0;
-            padding: 0;
+            margin: 20px;
+            background: #f4f4f9;
         }
 
         h1 {
-            background: #222;
-            color: #fff;
-            padding: 15px;
-            margin: 0;
+            color: #333;
+            text-align: center;
         }
 
         form {
-            margin: 20px;
+            text-align: center;
+            margin-bottom: 20px;
         }
 
         input[type="text"] {
-            padding: 10px;
+            padding: 8px;
             width: 250px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 5px;
+            border: 1px solid #aaa;
         }
 
+        select,
         button {
-            padding: 10px 15px;
-            border: none;
-            background: #007BFF;
-            color: white;
-            border-radius: 4px;
+            padding: 8px 12px;
+            margin-left: 5px;
+            border-radius: 5px;
+            border: 1px solid #888;
+            background: #333;
+            color: #fff;
             cursor: pointer;
         }
 
         button:hover {
-            background: #0056b3;
+            background: #555;
+        }
+
+        .movies {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
         }
 
         .movie {
-            background: white;
+            background: #fff;
             border-radius: 8px;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-            margin: 20px auto;
-            padding: 15px;
-            width: 60%;
-            text-align: left;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
 
         .movie img {
-            max-width: 150px;
+            width: 100%;
             border-radius: 5px;
-            float: left;
-            margin-right: 15px;
-        }
-
-        .movie h2 {
-            margin: 0;
-            color: #333;
         }
 
         .error {
-            color: red;
-            font-weight: bold;
+            color: #fff;
+            background: #e74c3c;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 20px;
         }
 
-        .loading {
-            display: none;
-            font-size: 18px;
-            color: #555;
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .pagination a {
+            padding: 8px 12px;
+            margin: 0 5px;
+            border-radius: 5px;
+            border: 1px solid #888;
+            text-decoration: none;
+            color: #333;
+            background: #ddd;
+        }
+
+        .pagination a:hover {
+            background: #bbb;
+        }
+
+        .pagination span {
+            font-weight: bold;
         }
     </style>
-    <script>
-        function showLoading() {
-            document.getElementById("loading").style.display = "block";
-        }
-    </script>
 </head>
 
 <body>
     <h1>🎬 Movie Explorer</h1>
 
-    <form method="get" onsubmit="showLoading()">
-        <input type="text" name="query" placeholder="Search for a movie..." value="{{ query }}">
+    <!-- Search Form -->
+    <form method="get">
+        <input type="text" name="query" placeholder="Search movies..." value="{{ query }}">
+        <select name="genre">
+            <option value="">-- Select Genre --</option>
+            {% for g in genres %}
+            <option value="{{ g.id }}" {% if g.id|string==genre %}selected{% endif %}>
+                {{ g.name }}
+            </option>
+            {% endfor %}
+        </select>
         <button type="submit">Search</button>
     </form>
 
-    <!-- Loading spinner -->
-    <p id="loading" class="loading">⏳ Loading, please wait...</p>
-
-    <!-- Error message -->
-    {% if error_message %}
-    <p class="error">{{ error_message }}</p>
+    <!-- Error Message -->
+    {% if error %}
+    <div class="error">{{ error }}</div>
     {% endif %}
 
-    <!-- Movie results -->
-    {% for movie in movies %}
-    <div class="movie">
-        {% if movie.poster_path %}
-        <img src="https://image.tmdb.org/t/p/w200{{ movie.poster_path }}" alt="{{ movie.title }}">
-        {% endif %}
-        <h2>{{ movie.title }}</h2>
-        <p><strong>Release Date:</strong> {{ movie.release_date }}</p>
-        <p>{{ movie.overview }}</p>
-        <div style="clear: both;"></div>
+    <!-- Movie Results -->
+    {% if movies %}
+    <div class="movies">
+        {% for movie in movies %}
+        <div class="movie">
+            {% if movie.poster_path %}
+            <img src="https://image.tmdb.org/t/p/w200{{ movie.poster_path }}" alt="{{ movie.title }}">
+            {% else %}
+            <div style="background:#ccc; height:300px; display:flex; align-items:center; justify-content:center;">
+                No Image
+            </div>
+            {% endif %}
+            <h3>{{ movie.title }}</h3>
+            <p>Release Date: {{ movie.release_date }}</p>
+            <p>{{ movie.overview[:100] }}...</p>
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="/?query={{ query }}&genre={{ genre }}&page={{ page-1 }}">⬅ Prev</a>
+        {% endif %}
+        <span>Page {{ page }} of {{ total_pages }}</span>
+        {% if page < total_pages %} <a href="/?query={{ query }}&genre={{ genre }}&page={{ page+1 }}">Next ➡</a>
+            {% endif %}
+    </div>
+    {% endif %}
 </body>
 
 </html>
