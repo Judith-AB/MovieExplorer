@@ -105,7 +105,7 @@
         <select name="genre">
             <option value="">-- Select Genre --</option>
             {% for g in genres %}
-            <option value="{{ g.id }}" {% if g.id|string==genre %}selected{% endif %}>
+            <option value="{{ g.id }}" {% if g.id|string==selected_genre %}selected{% endif %}>
                 {{ g.name }}
             </option>
             {% endfor %}
@@ -114,8 +114,8 @@
     </form>
 
     <!-- Error Message -->
-    {% if error %}
-    <div class="error">{{ error }}</div>
+    {% if error_message %}
+    <div class="error">{{ error_message }}</div>
     {% endif %}
 
     <!-- Movie Results -->
@@ -131,21 +131,26 @@
             </div>
             {% endif %}
             <h3>{{ movie.title }}</h3>
-            <p>Release Date: {{ movie.release_date }}</p>
+            <p>Release Date: {{ movie.release_date or "N/A" }}</p>
             <p>{{ movie.overview[:100] }}...</p>
         </div>
         {% endfor %}
     </div>
+    {% else %}
+    {% if not error_message %}
+    <p style="text-align:center; color:#555;">⚠️ No movies found. Try another search or genre.</p>
+    {% endif %}
     {% endif %}
 
     <!-- Pagination -->
     {% if total_pages > 1 %}
     <div class="pagination">
         {% if page > 1 %}
-        <a href="/?query={{ query }}&genre={{ genre }}&page={{ page-1 }}">⬅ Prev</a>
+        <a href="/?query={{ query }}&genre={{ selected_genre }}&page={{ page-1 }}">⬅ Prev</a>
         {% endif %}
         <span>Page {{ page }} of {{ total_pages }}</span>
-        {% if page < total_pages %} <a href="/?query={{ query }}&genre={{ genre }}&page={{ page+1 }}">Next ➡</a>
+        {% if page < total_pages %} <a href="/?query={{ query }}&genre={{ selected_genre }}&page={{ page+1 }}">Next
+            ➡</a>
             {% endif %}
     </div>
     {% endif %}
