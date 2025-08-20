@@ -6,7 +6,7 @@ It provides a clean interface to browse movies with posters, release dates, and 
 
 ---
 
-## ✨ Features
+## Features
 - 🔎 Search movies by title  
 - 🎭 Filter movies by genre  
 - ⚠️ Graceful error handling (user-friendly messages when API fails)  
@@ -15,7 +15,7 @@ It provides a clean interface to browse movies with posters, release dates, and 
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 - **Backend:** Flask (Python)  
 - **Frontend:** HTML, CSS (Jinja2 templating)  
 - **API:** TMDB (The Movie Database)  
@@ -23,25 +23,8 @@ It provides a clean interface to browse movies with posters, release dates, and 
 
 ---
 
-## 📂 Project Structure
-MovieExplorer/
-│
-├── app.py # Main Flask application
-├── requirements.txt # Project dependencies
-├── .gitignore # Git ignore file
-│
-├── templates/ # HTML templates
-│ └── index.html
-│
-└── venv/ # Virtual environment (ignored in Git)
-
-
----
-
-##  Getting Started
-
-### 1️. Clone the repository
-```bash
+Getting Started
+1️⃣ Clone the repository
 git clone https://github.com/YourUsername/MovieExplorer.git
 cd MovieExplorer
 
@@ -59,3 +42,7 @@ TMDB_API_KEY=your_api_key_here
 
 5️⃣ Run the application
 python app.py
+
+## 🎥 Demo Video  
+
+👉 [Watch the demo here](https://drive.google.com/file/d/1uz3cq08nspjfpfvNjKR_5ldj4g1VxZVP/view?usp=sharing) 
