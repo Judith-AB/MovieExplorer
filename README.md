@@ -25,8 +25,8 @@ It provides a clean interface to browse movies with posters, release dates, and 
 
 ## Getting Started
 1️⃣ Clone the repository
-git clone https://github.com/YourUsername/MovieExplorer.git
-cd MovieExplorer
+- git clone https://github.com/YourUsername/MovieExplorer.git
+- cd MovieExplorer
 
 2️⃣ Create virtual environment
 python -m venv venv
