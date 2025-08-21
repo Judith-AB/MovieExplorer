@@ -23,7 +23,7 @@ It provides a clean interface to browse movies with posters, release dates, and 
 
 ---
 
-Getting Started
+## Getting Started
 1️⃣ Clone the repository
 git clone https://github.com/YourUsername/MovieExplorer.git
 cd MovieExplorer
